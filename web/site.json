@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "name": "callpatch",
+  "github": "https://github.com/SuperMarioYL/callpatch",
+  "host": "callpatch.lei6393.com",
+  "lang": { "primary": "zh", "toggle": true },
+  "accent": ["#e8a23a"],
+  "hero": {
+    "eyebrow": { "zh": "本地大模型 · 工具调用 · 运行期修复", "en": "Local LLMs · Tool Calls · Runtime Repair" },
+    "headline": {
+      "zh": "接本地大模型\n工具调用不再静默崩溃",
+      "en": "Run local models\nwithout silent tool-call crashes"
+    },
+    "sub": {
+      "zh": "流式响应里被截断、错位的工具调用，在到达你的编码助手之前就被修好——不用换模型，不用改配置。",
+      "en": "Truncated, misaligned tool calls in the streaming response are repaired before they reach your coding agent — no model swap, no config change."
+    },
+    "command": "callpatch repair --trace broken.sse",
+    "cta": { "zh": "看修复演示", "en": "See the repair demo" },
+    "ctaGithub": { "zh": "GitHub", "en": "GitHub" },
+    "scroll": { "zh": "为什么需要", "en": "Why you need it" }
+  },
+  "advantages": [
+    {
+      "title": { "zh": "运行期修复，不是事后告警", "en": "Runtime repair, not after-the-fact alerts" },
+      "body": {
+        "zh": "流式响应里的畸形工具调用 envelope，在请求抵达你的助手前被修好。你的工作流不会因为一次坏掉的 JSON 就中断。",
+        "en": "Malformed tool-call envelopes in the streaming response are fixed before the request reaches your agent. Your workflow never breaks on one bad JSON."
+      },
+      "chips": ["› 流式 delta 缓冲", "› 实时修复", "› 零中断"]
+    },
+    {
+      "title": { "zh": "按模型查表，对症修复", "en": "Per-model repair recipes" },
+      "body": {
+        "zh": "每个模型的工具调用坏法不一样——括号截断、围栏断裂、哨兵泄漏。按模型查表，用对应的修复策略，不是一刀切。",
+        "en": "Every model breaks tool calls differently — truncated braces, split fences, leaked sentinels. A per-model lookup applies the matching repair strategy, not a one-size-fits-all patch."
+      },
+      "chips": ["› 括号平衡", "› 围栏重织", "› 哨兵剥离"]
+    },
+    {
+      "title": { "zh": "单二进制，零依赖", "en": "One binary, zero dependencies" },
+      "body": {
+        "zh": "一个跨平台二进制，没有数据库、没有鉴权、没有微服务。本地跑，本地修，数据不出门。",
+        "en": "A single cross-platform binary — no database, no auth, no microservices. Runs locally, repairs locally, your data never leaves the machine."
+      },
+      "chips": ["› 单进程", "› 跨平台", "› 无数据库"]
+    },
+    {
+      "title": { "zh": "一条命令可验", "en": "Verifiable in one command" },
+      "body": {
+        "zh": "喂入一段坏掉的流式响应，直接吐出修好的工具调用 JSON 和修复轨迹。修复对不对，肉眼可查。",
+        "en": "Feed in a broken streaming trace, get back the repaired tool-call JSON plus a repair trace. Whether the fix is right is visible to the naked eye."
+      },
+      "chips": ["› 命令行", "› 修复轨迹", "› JSON 可断言"]
+    }
+  ],
+  "scene": { "kind": "particle-field" },
+  "cta": {
+    "headline": { "zh": "接本地大模型，工具调用先修好再上路", "en": "Run local models with tool calls fixed before they ship" },
+    "sub": { "zh": "MIT 开源 · 单二进制 · 命令行可验", "en": "MIT open source · single binary · CLI-verifiable" },
+    "button": { "zh": "看 GitHub", "en": "View on GitHub" }
+  },
+  "footer": { "tag": { "zh": "MIT 开源 · 本地运行期修复", "en": "MIT open source · local runtime repair" } }
+}
