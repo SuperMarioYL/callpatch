@@ -1,0 +1,11 @@
+: fixture: qwen3 broken — ```json fence envelope whose closing fence + closing
+: brace were lost when the stream ended (finish_reason=length) mid-arguments.
+: Reassembled arguments buffer: ```json\n{"city":"北京","unit":"celsius"
+: Expected repair -> {"city":"北京","unit":"celsius"}
+data: {"id":"chatcmpl-qwen3-broken","object":"chat.completion.chunk","created":1737000000,"model":"qwen3","choices":[{"index":0,"delta":{"role":"assistant","tool_calls":[{"index":0,"id":"call_01","type":"function","function":{"name":"get_weather","arguments":"```json\n"}}]},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-qwen3-broken","object":"chat.completion.chunk","created":1737000000,"model":"qwen3","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\"city\":\"北京\",\"unit\":\"celsius\""}}]},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-qwen3-broken","object":"chat.completion.chunk","created":1737000000,"model":"qwen3","choices":[{"index":0,"delta":{},"finish_reason":"length"}]}
+
+data: [DONE]

@@ -1,0 +1,30 @@
+# binaries
+/callpatch
+/bin/
+/dist/
+*.exe
+*.test
+*.out
+
+# editor / OS
+.DS_Store
+.idea/
+.vscode/
+
+# go workspace scratch
+go.work
+go.work.sum
+
+# build scratch
+.builder_*
+.build_metadata*
+.stage_*
+.spawn.*
+PUBLISH_BLOCKED.md
+BUILD_SETUP_NEXT_STEPS.md
+DRIFT_REPORT.md
+GIT_AUTHOR_DRIFT.md
+
+# local agent notes (never ship)
+.claude/
+CLAUDE.md

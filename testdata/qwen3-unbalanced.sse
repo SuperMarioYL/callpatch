@@ -1,0 +1,11 @@
+: fixture: qwen3 unbalanced — nested object whose two closing braces were
+: dropped when the stream ended mid-number. Delta-assembled, no fence.
+: Reassembled arguments buffer: {"name":"search","args":{"q":"vllm tool call","limit":3
+: Expected repair -> {"name":"search","args":{"q":"vllm tool call","limit":3}}
+data: {"id":"chatcmpl-qwen3-nest","object":"chat.completion.chunk","created":1737000002,"model":"qwen3","choices":[{"index":0,"delta":{"role":"assistant","tool_calls":[{"index":0,"id":"call_03","type":"function","function":{"name":"run_search","arguments":"{\"name\":\"search\",\"args\":{\"q\":\"vllm tool call\","}}]},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-qwen3-nest","object":"chat.completion.chunk","created":1737000002,"model":"qwen3","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\"limit\":3"}}]},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-qwen3-nest","object":"chat.completion.chunk","created":1737000002,"model":"qwen3","choices":[{"index":0,"delta":{},"finish_reason":"length"}]}
+
+data: [DONE]

@@ -1,0 +1,12 @@
+: fixture: deepseek-v4 broken — the local shim failed to strip the
+: <｜tool▁call▁arguments▁begin｜> sentinel run, and the arguments JSON was
+: truncated mid-number when the stream ended.
+: Reassembled arguments buffer: <｜tool▁call▁arguments▁begin｜>{"query":"vllm 工具调用","top_k":3
+: Expected repair -> {"query":"vllm 工具调用","top_k":3}
+data: {"id":"chatcmpl-ds-broken","object":"chat.completion.chunk","created":1737000003,"model":"deepseek-v4","choices":[{"index":0,"delta":{"role":"assistant","tool_calls":[{"index":0,"id":"call_04","type":"function","function":{"name":"search_web","arguments":"<｜tool▁call▁arguments▁begin｜>{\"query\":\"vllm 工具调用\","}}]},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-ds-broken","object":"chat.completion.chunk","created":1737000003,"model":"deepseek-v4","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\"top_k\":3"}}]},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-ds-broken","object":"chat.completion.chunk","created":1737000003,"model":"deepseek-v4","choices":[{"index":0,"delta":{},"finish_reason":"length"}]}
+
+data: [DONE]
