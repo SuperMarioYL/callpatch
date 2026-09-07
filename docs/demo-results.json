@@ -1,0 +1,26 @@
+{
+  "version": "0.1.0",
+  "scope": "Offline repair of supplied SSE fixtures. JSON syntactic repair is demonstrated; live proxying and semantic correctness of inferred arguments are not.",
+  "inputs": [
+    {
+      "path": "testdata/qwen3-broken.sse",
+      "sha256": "e0e972c167b08b3f1041358b61a40ac31199c5e9a7a440516f51c37f67530dd6"
+    },
+    {
+      "path": "testdata/deepseek-broken.sse",
+      "sha256": "ee5fbcf41db43762952d6e6b78df2d0c419c6f1ca6aeac6bd860eb0567be1269"
+    }
+  ],
+  "steps": [
+    {
+      "command": "go run ./cmd/callpatch repair --trace testdata/qwen3-broken.sse",
+      "output": "{\n  \"_repaired\": true,\n  \"function\": {\n    \"arguments\": \"{\\\"city\\\":\\\"北京\\\",\\\"unit\\\":\\\"celsius\\\"}\",\n    \"name\": \"get_weather\"\n  },\n  \"id\": \"call_01\",\n  \"index\": 0,\n  \"type\": \"function\"\n}\n",
+      "exit_code": 0
+    },
+    {
+      "command": "go run ./cmd/callpatch repair --trace --model deepseek-v4 testdata/deepseek-broken.sse",
+      "output": "{\n  \"_repaired\": true,\n  \"function\": {\n    \"arguments\": \"{\\\"query\\\":\\\"vllm 工具调用\\\",\\\"top_k\\\":3}\",\n    \"name\": \"search_web\"\n  },\n  \"id\": \"call_04\",\n  \"index\": 0,\n  \"type\": \"function\"\n}\n",
+      "exit_code": 0
+    }
+  ]
+}

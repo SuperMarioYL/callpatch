@@ -1,64 +1,244 @@
 {
-  "schema": 1,
-  "name": "callpatch",
+  "schema": 3,
+  "name": "CallPatch",
   "github": "https://github.com/SuperMarioYL/callpatch",
   "host": "callpatch.lei6393.com",
-  "lang": { "primary": "zh", "toggle": true },
-  "accent": ["#e8a23a"],
+  "palette": "auto",
+  "lang": {
+    "primary": "zh",
+    "toggle": true
+  },
+  "meta": {
+    "visual_profile": "neon-particle",
+    "content_version": "0.1.0",
+    "demo_source": "docs/demo-results.json"
+  },
   "hero": {
-    "eyebrow": { "zh": "本地大模型 · 工具调用 · 运行期修复", "en": "Local LLMs · Tool Calls · Runtime Repair" },
+    "eyebrow": {
+      "zh": "从已保存的 SSE 轨迹重组 tool-call 参数，按模型规则修复 JSON，并输出修复轨迹。",
+      "en": "Reassemble tool-call arguments from saved SSE traces, repair JSON with model-specific rules, and inspect the repair trace."
+    },
     "headline": {
-      "zh": "接本地大模型\n工具调用不再静默崩溃",
-      "en": "Run local models\nwithout silent tool-call crashes"
+      "zh": "工具参数坏了，\n先修复再检查",
+      "en": "Broken tool arguments.\nRepair, then inspect."
     },
     "sub": {
-      "zh": "流式响应里被截断、错位的工具调用，在到达你的编码助手之前就被修好——不用换模型，不用改配置。",
-      "en": "Truncated, misaligned tool calls in the streaming response are repaired before they reach your coding agent — no model swap, no config change."
+      "zh": "从已保存的 SSE 轨迹重组 tool-call 参数，按模型规则修复 JSON，并输出修复轨迹。",
+      "en": "Reassemble tool-call arguments from saved SSE traces, repair JSON with model-specific rules, and inspect the repair trace."
     },
-    "command": "callpatch repair --trace broken.sse",
-    "cta": { "zh": "看修复演示", "en": "See the repair demo" },
-    "ctaGithub": { "zh": "GitHub", "en": "GitHub" },
-    "scroll": { "zh": "为什么需要", "en": "Why you need it" }
+    "href": "#quickstart",
+    "cta": {
+      "zh": "运行示例",
+      "en": "Run the example"
+    },
+    "ctaGithub": {
+      "zh": "查看源码",
+      "en": "View source"
+    }
+  },
+  "scene": {
+    "kind": "neon-graph",
+    "caption": {
+      "zh": "SSE 重组 · JSON 修复",
+      "en": "SSE REASSEMBLY · JSON REPAIR"
+    },
+    "fallback": "/assets/presentation/scene-dark.svg",
+    "fallbackLight": "/assets/presentation/scene-light.svg"
   },
   "advantages": [
     {
-      "title": { "zh": "运行期修复，不是事后告警", "en": "Runtime repair, not after-the-fact alerts" },
-      "body": {
-        "zh": "流式响应里的畸形工具调用 envelope，在请求抵达你的助手前被修好。你的工作流不会因为一次坏掉的 JSON 就中断。",
-        "en": "Malformed tool-call envelopes in the streaming response are fixed before the request reaches your agent. Your workflow never breaks on one bad JSON."
+      "title": {
+        "zh": "重组后再修复",
+        "en": "Repair after reassembly"
       },
-      "chips": ["› 流式 delta 缓冲", "› 实时修复", "› 零中断"]
+      "body": {
+        "zh": "按调用索引组合 SSE 参数片段。",
+        "en": "Combine SSE argument fragments by call index."
+      }
     },
     {
-      "title": { "zh": "按模型查表，对症修复", "en": "Per-model repair recipes" },
-      "body": {
-        "zh": "每个模型的工具调用坏法不一样——括号截断、围栏断裂、哨兵泄漏。按模型查表，用对应的修复策略，不是一刀切。",
-        "en": "Every model breaks tool calls differently — truncated braces, split fences, leaked sentinels. A per-model lookup applies the matching repair strategy, not a one-size-fits-all patch."
+      "title": {
+        "zh": "按模型选择规则",
+        "en": "Select model rules"
       },
-      "chips": ["› 括号平衡", "› 围栏重织", "› 哨兵剥离"]
+      "body": {
+        "zh": "RepairSpec 将模型形状与修复策略放在一起。",
+        "en": "RepairSpec keeps model shapes and repair strategies together."
+      }
     },
     {
-      "title": { "zh": "单二进制，零依赖", "en": "One binary, zero dependencies" },
-      "body": {
-        "zh": "一个跨平台二进制，没有数据库、没有鉴权、没有微服务。本地跑，本地修，数据不出门。",
-        "en": "A single cross-platform binary — no database, no auth, no microservices. Runs locally, repairs locally, your data never leaves the machine."
+      "title": {
+        "zh": "分开结果与轨迹",
+        "en": "Separate result and trace"
       },
-      "chips": ["› 单进程", "› 跨平台", "› 无数据库"]
-    },
-    {
-      "title": { "zh": "一条命令可验", "en": "Verifiable in one command" },
       "body": {
-        "zh": "喂入一段坏掉的流式响应，直接吐出修好的工具调用 JSON 和修复轨迹。修复对不对，肉眼可查。",
-        "en": "Feed in a broken streaming trace, get back the repaired tool-call JSON plus a repair trace. Whether the fix is right is visible to the naked eye."
-      },
-      "chips": ["› 命令行", "› 修复轨迹", "› JSON 可断言"]
+        "zh": "stdout 输出 JSON，stderr 保留诊断信息。",
+        "en": "stdout carries JSON while stderr retains diagnostics."
+      }
     }
   ],
-  "scene": { "kind": "particle-field" },
-  "cta": {
-    "headline": { "zh": "接本地大模型，工具调用先修好再上路", "en": "Run local models with tool calls fixed before they ship" },
-    "sub": { "zh": "MIT 开源 · 单二进制 · 命令行可验", "en": "MIT open source · single binary · CLI-verifiable" },
-    "button": { "zh": "看 GitHub", "en": "View on GitHub" }
+  "story": {
+    "intro": {
+      "title": {
+        "zh": "把格式问题留在可检查的边界",
+        "en": "Keep format repair at an inspectable boundary"
+      },
+      "body": {
+        "zh": "流式工具参数可能夹着围栏、sentinel，或缺失闭合字符。CallPatch 读取完整保存的 SSE，先按 tool-call 索引拼接，再运行有限的确定性修复。它让参数可以被检查，不代替调用者判断修复后的含义是否正确。",
+        "en": "Streamed tool arguments may contain fences or sentinels, or lack closing characters. CallPatch reads a saved SSE stream, reassembles calls by index, and applies bounded deterministic repairs. The result is inspectable JSON; callers still judge whether the repaired meaning is correct."
+      }
+    },
+    "sections": [
+      {
+        "title": {
+          "zh": "从输入到结果",
+          "en": "From input to result"
+        },
+        "body": {
+          "zh": "实际修复仓库自带的 Qwen3 与 DeepSeek SSE 示例。输出证明这两条输入经过修复后能生成参数 JSON，不证明截断前的原始语义被完整恢复，也没有运行实时代理。",
+          "en": "The run repairs the supplied Qwen3 and DeepSeek SSE examples. It demonstrates argument JSON generation for these inputs, not exact recovery of original intent or live proxy operation."
+        },
+        "image": {
+          "light": "/assets/presentation/process-light.svg",
+          "dark": "/assets/presentation/process-dark.svg",
+          "alt": {
+            "zh": "实际修复仓库自带的 Qwen3 与 DeepSeek SSE 示例。输出证明这两条输入经过修复后能生成参数 JSON，不证明截断前的原始语义被完整恢复，也没有运行实时代理。",
+            "en": "The run repairs the supplied Qwen3 and DeepSeek SSE examples. It demonstrates argument JSON generation for these inputs, not exact recovery of original intent or live proxy operation."
+          }
+        }
+      },
+      {
+        "title": {
+          "zh": "工作原理",
+          "en": "How it works"
+        },
+        "body": {
+          "zh": "internal/proxy/sse.go 重组 delta；internal/spec 根据模型选择 RepairSpec；internal/repair 处理围栏、引号、sentinel 与括号。CLI 将修复后的工具 envelope 写到 stdout，可选轨迹写到 stderr。当前 serve 子命令明确未实现。",
+          "en": "internal/proxy/sse.go reassembles deltas, internal/spec selects a RepairSpec, and internal/repair handles fences, quotes, sentinels and braces. The CLI writes repaired envelopes to stdout and optional traces to stderr. The serve subcommand is explicitly unimplemented."
+        },
+        "image": {
+          "light": "/assets/presentation/architecture-light.svg",
+          "dark": "/assets/presentation/architecture-dark.svg",
+          "alt": {
+            "zh": "internal/proxy/sse.go 重组 delta；internal/spec 根据模型选择 RepairSpec；internal/repair 处理围栏、引号、sentinel 与括号。CLI 将修复后的工具 envelope 写到 stdout，可选轨迹写到 stderr。当前 serve 子命令明确未实现。",
+            "en": "internal/proxy/sse.go reassembles deltas, internal/spec selects a RepairSpec, and internal/repair handles fences, quotes, sentinels and braces. The CLI writes repaired envelopes to stdout and optional traces to stderr. The serve subcommand is explicitly unimplemented."
+          }
+        }
+      },
+      {
+        "title": {
+          "zh": "能力与接入",
+          "en": "Capabilities and integration"
+        },
+        "body": {
+          "zh": "CallPatch 的输入是已记录的失败轨迹，输出是待检查的参数 envelope。它与 Agent 或推理服务分工不同，不负责执行工具、补全任务或保证任意后端兼容。",
+          "en": "CallPatch consumes recorded failure traces and produces argument envelopes for inspection. It does not execute tools, complete an agent task or guarantee arbitrary backend compatibility."
+        },
+        "image": {
+          "light": "/assets/presentation/integrations-light.svg",
+          "dark": "/assets/presentation/integrations-dark.svg",
+          "alt": {
+            "zh": "CallPatch 的输入是已记录的失败轨迹，输出是待检查的参数 envelope。它与 Agent 或推理服务分工不同，不负责执行工具、补全任务或保证任意后端兼容。",
+            "en": "CallPatch consumes recorded failure traces and produces argument envelopes for inspection. It does not execute tools, complete an agent task or guarantee arbitrary backend compatibility."
+          }
+        }
+      }
+    ],
+    "details": [
+      {
+        "title": {
+          "zh": "当前没有实时代理",
+          "en": "No live proxy in this version"
+        },
+        "body": {
+          "zh": "serve 会返回未实现错误；这里展示的是 repair 的离线内核。",
+          "en": "serve returns an unimplemented error; this example demonstrates the offline repair core."
+        }
+      }
+    ]
   },
-  "footer": { "tag": { "zh": "MIT 开源 · 本地运行期修复", "en": "MIT open source · local runtime repair" } }
+  "demo": {
+    "title": {
+      "zh": "实际运行结果",
+      "en": "Actual demo output"
+    },
+    "note": {
+      "zh": "实际修复仓库自带的 Qwen3 与 DeepSeek SSE 示例。输出证明这两条输入经过修复后能生成参数 JSON，不证明截断前的原始语义被完整恢复，也没有运行实时代理。",
+      "en": "The run repairs the supplied Qwen3 and DeepSeek SSE examples. It demonstrates argument JSON generation for these inputs, not exact recovery of original intent or live proxy operation."
+    },
+    "source": "https://github.com/SuperMarioYL/callpatch/blob/main/docs/demo-results.json",
+    "steps": [
+      {
+        "label": {
+          "zh": "Qwen3 围栏轨迹",
+          "en": "Qwen3 fenced trace"
+        },
+        "body": {
+          "zh": "从保存的 Qwen3 输入恢复可解析参数。",
+          "en": "Recover parseable arguments from the saved Qwen3 input."
+        },
+        "command": "go run ./cmd/callpatch repair --trace testdata/qwen3-broken.sse",
+        "output": "{\n  \"_repaired\": true,\n  \"function\": {\n    \"arguments\": \"{\\\"city\\\":\\\"北京\\\",\\\"unit\\\":\\\"celsius\\\"}\",\n    \"name\": \"get_weather\"\n  },\n  \"id\": \"call_01\",\n  \"index\": 0,\n  \"type\": \"function\"\n}\n",
+        "image": "/assets/presentation/demo-0-light.svg",
+        "imageDark": "/assets/presentation/demo-0-dark.svg"
+      },
+      {
+        "label": {
+          "zh": "DeepSeek sentinel",
+          "en": "DeepSeek sentinel trace"
+        },
+        "body": {
+          "zh": "显式选择 DeepSeek 规则处理第二条输入。",
+          "en": "Apply the explicitly selected DeepSeek rules to the second input."
+        },
+        "command": "go run ./cmd/callpatch repair --trace --model deepseek-v4 testdata/deepseek-broken.sse",
+        "output": "{\n  \"_repaired\": true,\n  \"function\": {\n    \"arguments\": \"{\\\"query\\\":\\\"vllm 工具调用\\\",\\\"top_k\\\":3}\",\n    \"name\": \"search_web\"\n  },\n  \"id\": \"call_04\",\n  \"index\": 0,\n  \"type\": \"function\"\n}\n",
+        "image": "/assets/presentation/demo-1-light.svg",
+        "imageDark": "/assets/presentation/demo-1-dark.svg"
+      }
+    ]
+  },
+  "quickstart": {
+    "title": {
+      "zh": "从完整输入开始",
+      "en": "Start with complete input"
+    },
+    "body": {
+      "zh": "需要 Go 1.24+。示例用 go run 执行源码，首次构建可能下载依赖；修复本身只读取本地文件。",
+      "en": "Requires Go 1.24+. The demo uses go run; initial building may fetch dependencies. The repair itself reads local files only."
+    },
+    "steps": [
+      {
+        "title": {
+          "zh": "安装",
+          "en": "Install"
+        },
+        "code": "git clone https://github.com/SuperMarioYL/callpatch.git\ncd callpatch\ngo build -o callpatch ./cmd/callpatch"
+      },
+      {
+        "title": {
+          "zh": "运行自带示例",
+          "en": "Run the supplied example"
+        },
+        "code": "go run ./cmd/callpatch repair --trace testdata/qwen3-broken.sse\ngo run ./cmd/callpatch repair --trace --model deepseek-v4 testdata/deepseek-broken.sse"
+      }
+    ]
+  },
+  "limitations": [
+    {
+      "zh": "合成或补齐的参数需要人工或调用方校验，合法 JSON 不等于正确操作。",
+      "en": "Reconstructed arguments need caller review; valid JSON does not imply a correct operation."
+    },
+    {
+      "zh": "当前 serve 未实现，不能据此声称 Agent 接入已跑通。",
+      "en": "serve is unimplemented, so this does not establish a working agent integration."
+    },
+    {
+      "zh": "未知模型会回退 Qwen3 规则，需留意 stderr。",
+      "en": "Unknown models fall back to Qwen3 rules; inspect stderr."
+    }
+  ],
+  "footer": {
+    "tag": "0.1.0 · Go 1.24+ · MIT"
+  }
 }

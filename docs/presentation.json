@@ -1,0 +1,90 @@
+{
+  "name": "CallPatch",
+  "tagline": "Inspect and repair argument JSON from recorded SSE traces.",
+  "architecture": {
+    "title": "Saved SSE to repaired tool-call JSON",
+    "nodes": [
+      {
+        "title": "SSE trace",
+        "detail": "Recorded data lines"
+      },
+      {
+        "title": "Reassembler",
+        "detail": "tool-call delta buffers"
+      },
+      {
+        "title": "RepairSpec",
+        "detail": "Qwen3 / DeepSeek rules"
+      },
+      {
+        "title": "Repair pipeline",
+        "detail": "Fence, quote and brace handling"
+      },
+      {
+        "title": "CLI output",
+        "detail": "JSON stdout, trace stderr"
+      }
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ]
+    ]
+  },
+  "process": {
+    "title": "Repair the two supplied broken traces",
+    "steps": [
+      {
+        "title": "Read fixtures",
+        "detail": "Qwen3 and DeepSeek SSE"
+      },
+      {
+        "title": "Reassemble",
+        "detail": "Collect argument fragments"
+      },
+      {
+        "title": "Apply rules",
+        "detail": "Produce JSON argument strings"
+      }
+    ],
+    "result": "Both supplied trace repairs exit successfully; no tool calls or model server are executed."
+  },
+  "integrations": {
+    "title": "Implemented offline repair routes",
+    "items": [
+      {
+        "title": "SSE files",
+        "detail": "OpenAI-compatible recorded deltas"
+      },
+      {
+        "title": "Qwen3 spec",
+        "detail": "Fence / brace / quote rules"
+      },
+      {
+        "title": "DeepSeek spec",
+        "detail": "Sentinel and truncation rules"
+      },
+      {
+        "title": "JSON stdout",
+        "detail": "One tool envelope per call"
+      },
+      {
+        "title": "Trace stderr",
+        "detail": "Declared strategies and byte counts"
+      }
+    ]
+  }
+}

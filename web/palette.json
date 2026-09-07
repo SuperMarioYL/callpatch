@@ -1,0 +1,38 @@
+{
+  "mode": "auto",
+  "id": "a8e656-6ee76a-f1f6ac-683156c4859b",
+  "identity": "https://github.com/supermarioyl/callpatch",
+  "primary": "#a8e656",
+  "secondary": "#6ee76a",
+  "highlight": "#f1f6ac",
+  "dark": {
+    "bg": "#080c0d",
+    "panel": "#101717",
+    "code": "#0f1713",
+    "ink": "#fcfdee",
+    "muted": "#a6b9a8",
+    "line": "#2b3c1d",
+    "primary": "#a8e656",
+    "secondary": "#6ee76a",
+    "highlight": "#f1f6ac",
+    "accent": "#a8e656",
+    "buttonStart": "#5e8130",
+    "buttonEnd": "#40853d",
+    "buttonText": "#ffffff"
+  },
+  "light": {
+    "bg": "#fcfef9",
+    "panel": "#fbfef7",
+    "code": "#f9fdf3",
+    "ink": "#1e2a1c",
+    "muted": "#65796a",
+    "line": "#e4f7cb",
+    "primary": "#5c7e2f",
+    "secondary": "#3f833c",
+    "highlight": "#757754",
+    "accent": "#5c7e2f",
+    "buttonStart": "#5e8130",
+    "buttonEnd": "#40853d",
+    "buttonText": "#ffffff"
+  }
+}
