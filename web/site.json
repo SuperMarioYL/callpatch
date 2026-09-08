@@ -104,6 +104,10 @@
           "alt": {
             "zh": "实际修复仓库自带的 Qwen3 与 DeepSeek SSE 示例。输出证明这两条输入经过修复后能生成参数 JSON，不证明截断前的原始语义被完整恢复，也没有运行实时代理。",
             "en": "The run repairs the supplied Qwen3 and DeepSeek SSE examples. It demonstrates argument JSON generation for these inputs, not exact recovery of original intent or live proxy operation."
+          },
+          "mobile": {
+            "light": "/assets/presentation/process-mobile-light.svg",
+            "dark": "/assets/presentation/process-mobile-dark.svg"
           }
         }
       },
@@ -122,6 +126,10 @@
           "alt": {
             "zh": "internal/proxy/sse.go 重组 delta；internal/spec 根据模型选择 RepairSpec；internal/repair 处理围栏、引号、sentinel 与括号。CLI 将修复后的工具 envelope 写到 stdout，可选轨迹写到 stderr。当前 serve 子命令明确未实现。",
             "en": "internal/proxy/sse.go reassembles deltas, internal/spec selects a RepairSpec, and internal/repair handles fences, quotes, sentinels and braces. The CLI writes repaired envelopes to stdout and optional traces to stderr. The serve subcommand is explicitly unimplemented."
+          },
+          "mobile": {
+            "light": "/assets/presentation/architecture-mobile-light.svg",
+            "dark": "/assets/presentation/architecture-mobile-dark.svg"
           }
         }
       },
@@ -140,6 +148,10 @@
           "alt": {
             "zh": "CallPatch 的输入是已记录的失败轨迹，输出是待检查的参数 envelope。它与 Agent 或推理服务分工不同，不负责执行工具、补全任务或保证任意后端兼容。",
             "en": "CallPatch consumes recorded failure traces and produces argument envelopes for inspection. It does not execute tools, complete an agent task or guarantee arbitrary backend compatibility."
+          },
+          "mobile": {
+            "light": "/assets/presentation/integrations-mobile-light.svg",
+            "dark": "/assets/presentation/integrations-mobile-dark.svg"
           }
         }
       }
