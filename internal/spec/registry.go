@@ -9,6 +9,8 @@
 // interface), so the layering is strictly one-way.
 package spec
 
+import "strings"
+
 // EnvelopeShape describes how a model's tool-call JSON is carried in the SSE
 // stream produced by a local OpenAI-compatible server.
 type EnvelopeShape string
@@ -99,6 +101,31 @@ func Register(s RepairSpec) { registry[s.Model] = s }
 func Lookup(model string) (RepairSpec, bool) {
 	s, ok := registry[model]
 	return s, ok
+}
+
+// Match resolves a model name as emitted by a real server to a registered
+// RepairSpec. Servers never send the bare spec key: llama.cpp and vLLM carry
+// ids like "deepseek-ai/DeepSeek-V4" or "Qwen/Qwen3-32B", so an exact lookup
+// (Lookup) misses every realistic spelling. Match tries the exact key first,
+// then a case-insensitive substring match of the model id against the
+// registered keys, preferring the longest matching key so a more specific spec
+// (e.g. "deepseek-v4") wins over a shorter one that also matches.
+func Match(model string) (RepairSpec, bool) {
+	if s, ok := Lookup(model); ok {
+		return s, true
+	}
+	lower := strings.ToLower(model)
+	best, bestLen := "", 0
+	for key := range registry {
+		lkey := strings.ToLower(key)
+		if strings.Contains(lower, lkey) && len(lkey) > bestLen {
+			best, bestLen = key, len(lkey)
+		}
+	}
+	if best == "" {
+		return RepairSpec{}, false
+	}
+	return registry[best], true
 }
 
 // Models returns the registered model names in sorted order.

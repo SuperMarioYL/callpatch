@@ -17,6 +17,8 @@ import (
 // fields decode into the ignored struct tail, so partial / vendor-extended
 // chunks from llama.cpp and vLLM parse without error.
 type Chunk struct {
+	ID      string `json:"id,omitempty"`
+	Created int64  `json:"created,omitempty"`
 	Model   string `json:"model,omitempty"`
 	Choices []struct {
 		Index int `json:"index"`
@@ -24,9 +26,9 @@ type Chunk struct {
 			Role      string `json:"role,omitempty"`
 			Content   string `json:"content,omitempty"`
 			ToolCalls []struct {
-				Index int `json:"index"`
-				ID    string `json:"id,omitempty"`
-				Type  string `json:"type,omitempty"`
+				Index    int    `json:"index"`
+				ID       string `json:"id,omitempty"`
+				Type     string `json:"type,omitempty"`
 				Function struct {
 					Name      string `json:"name,omitempty"`
 					Arguments string `json:"arguments,omitempty"`
@@ -46,6 +48,23 @@ type ToolCall struct {
 	Arguments string
 }
 
+// ChatStream is the full reassembled view of one chat-completions SSE body:
+// the tool calls (first-seen order, keyed by tool-call index — the
+// single-choice shape coding agents use), plus the per-choice accumulated
+// content and the final finish_reason, so the serve proxy can re-emit a
+// semantically equivalent stream when a repair rewrites the arguments.
+type ChatStream struct {
+	ID      string
+	Created int64
+	Model   string
+	Calls   []ToolCall
+	// Content maps choice index to the concatenated content text.
+	Content map[int]string
+	// Finish maps choice index to the final finish_reason ("" when the
+	// stream never carried one).
+	Finish map[int]string
+}
+
 // Reassemble parses an OpenAI-compatible SSE stream and accumulates, per tool
 // call index, the function name and the concatenated arguments fragments. It
 // returns the model name (if any chunk carried one) and the tool calls in
@@ -53,8 +72,25 @@ type ToolCall struct {
 // servers occasionally emit a malformed framing line), and a `data: [DONE]`
 // sentinel terminates the stream.
 func Reassemble(r io.Reader) (model string, calls []ToolCall, err error) {
+	cs, err := ReassembleChatStream(r)
+	if err != nil {
+		return "", nil, err
+	}
+	return cs.Model, cs.Calls, nil
+}
+
+// ReassembleChatStream parses an OpenAI-compatible SSE body into the full
+// ChatStream view. It shares the framing and accumulation rules of Reassemble
+// (single scan, unparseable data lines skipped, `data: [DONE]` sentinel ends
+// the stream) and additionally captures the stream id, the created timestamp,
+// the per-choice content text and the final finish_reason per choice.
+func ReassembleChatStream(r io.Reader) (*ChatStream, error) {
 	sc := bufio.NewScanner(r)
 	sc.Buffer(make([]byte, 0, 64*1024), 16*1024*1024)
+	cs := &ChatStream{
+		Content: map[int]string{},
+		Finish:  map[int]string{},
+	}
 	byIndex := map[int]*ToolCall{}
 	var order []int
 
@@ -74,9 +110,21 @@ func Reassemble(r io.Reader) (model string, calls []ToolCall, err error) {
 			continue
 		}
 		if ch.Model != "" {
-			model = ch.Model
+			cs.Model = ch.Model
+		}
+		if ch.ID != "" {
+			cs.ID = ch.ID
+		}
+		if ch.Created != 0 {
+			cs.Created = ch.Created
 		}
 		for _, c := range ch.Choices {
+			if c.Delta.Content != "" {
+				cs.Content[c.Index] += c.Delta.Content
+			}
+			if c.FinishReason != "" {
+				cs.Finish[c.Index] = c.FinishReason
+			}
 			for _, tc := range c.Delta.ToolCalls {
 				call, exists := byIndex[tc.Index]
 				if !exists {
@@ -98,12 +146,12 @@ func Reassemble(r io.Reader) (model string, calls []ToolCall, err error) {
 		}
 	}
 	if e := sc.Err(); e != nil {
-		return model, nil, e
+		return nil, e
 	}
 	for _, i := range order {
-		calls = append(calls, *byIndex[i])
+		cs.Calls = append(cs.Calls, *byIndex[i])
 	}
-	return model, calls, nil
+	return cs, nil
 }
 
 // dataPayload returns the JSON payload of an SSE `data:` line (with or without

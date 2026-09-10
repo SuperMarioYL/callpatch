@@ -10,21 +10,21 @@
   },
   "meta": {
     "visual_profile": "neon-particle",
-    "content_version": "0.1.0",
+    "content_version": "0.2.0",
     "demo_source": "docs/demo-results.json"
   },
   "hero": {
     "eyebrow": {
-      "zh": "从已保存的 SSE 轨迹重组 tool-call 参数，按模型规则修复 JSON，并输出修复轨迹。",
-      "en": "Reassemble tool-call arguments from saved SSE traces, repair JSON with model-specific rules, and inspect the repair trace."
+      "zh": "从已保存的 SSE 轨迹或本地代理流重组 tool-call 参数，按模型规则修复 JSON，并输出修复轨迹。",
+      "en": "Reassemble tool-call arguments from saved SSE traces or live proxy streams, repair JSON with model-specific rules, and inspect the repair trace."
     },
     "headline": {
       "zh": "工具参数坏了，\n先修复再检查",
       "en": "Broken tool arguments.\nRepair, then inspect."
     },
     "sub": {
-      "zh": "从已保存的 SSE 轨迹重组 tool-call 参数，按模型规则修复 JSON，并输出修复轨迹。",
-      "en": "Reassemble tool-call arguments from saved SSE traces, repair JSON with model-specific rules, and inspect the repair trace."
+      "zh": "从已保存的 SSE 轨迹或本地代理流重组 tool-call 参数，按模型规则修复 JSON，并输出修复轨迹。",
+      "en": "Reassemble tool-call arguments from saved SSE traces or live proxy streams, repair JSON with model-specific rules, and inspect the repair trace."
     },
     "href": "#quickstart",
     "cta": {
@@ -95,15 +95,15 @@
           "en": "From input to result"
         },
         "body": {
-          "zh": "实际修复仓库自带的 Qwen3 与 DeepSeek SSE 示例。输出证明这两条输入经过修复后能生成参数 JSON，不证明截断前的原始语义被完整恢复，也没有运行实时代理。",
-          "en": "The run repairs the supplied Qwen3 and DeepSeek SSE examples. It demonstrates argument JSON generation for these inputs, not exact recovery of original intent or live proxy operation."
+          "zh": "实际修复仓库自带的 Qwen3 与 DeepSeek SSE 示例。输出证明这两条输入经过修复后能生成参数 JSON，不证明截断前的原始语义被完整恢复；实时代理由 serve 子命令提供。",
+          "en": "The run repairs the supplied Qwen3 and DeepSeek SSE examples. It demonstrates argument JSON generation for these inputs, not exact recovery of original intent; the live proxy is the serve subcommand."
         },
         "image": {
           "light": "/assets/presentation/process-light.svg",
           "dark": "/assets/presentation/process-dark.svg",
           "alt": {
-            "zh": "实际修复仓库自带的 Qwen3 与 DeepSeek SSE 示例。输出证明这两条输入经过修复后能生成参数 JSON，不证明截断前的原始语义被完整恢复，也没有运行实时代理。",
-            "en": "The run repairs the supplied Qwen3 and DeepSeek SSE examples. It demonstrates argument JSON generation for these inputs, not exact recovery of original intent or live proxy operation."
+            "zh": "实际修复仓库自带的 Qwen3 与 DeepSeek SSE 示例。输出证明这两条输入经过修复后能生成参数 JSON，不证明截断前的原始语义被完整恢复；实时代理由 serve 子命令提供。",
+            "en": "The run repairs the supplied Qwen3 and DeepSeek SSE examples. It demonstrates argument JSON generation for these inputs, not exact recovery of original intent; the live proxy is the serve subcommand."
           },
           "mobile": {
             "light": "/assets/presentation/process-mobile-light.svg",
@@ -117,15 +117,15 @@
           "en": "How it works"
         },
         "body": {
-          "zh": "internal/proxy/sse.go 重组 delta；internal/spec 根据模型选择 RepairSpec；internal/repair 处理围栏、引号、sentinel 与括号。CLI 将修复后的工具 envelope 写到 stdout，可选轨迹写到 stderr。当前 serve 子命令明确未实现。",
-          "en": "internal/proxy/sse.go reassembles deltas, internal/spec selects a RepairSpec, and internal/repair handles fences, quotes, sentinels and braces. The CLI writes repaired envelopes to stdout and optional traces to stderr. The serve subcommand is explicitly unimplemented."
+          "zh": "internal/proxy/sse.go 重组 delta；internal/spec 根据模型选择 RepairSpec；internal/repair 处理围栏、引号、sentinel 与括号。repair 子命令把修复后的工具 envelope 写到 stdout；serve 子命令在本地反向代理的流内做同样修复。",
+          "en": "internal/proxy/sse.go reassembles deltas, internal/spec selects a RepairSpec, and internal/repair handles fences, quotes, sentinels and braces. The repair subcommand writes repaired envelopes to stdout; the serve subcommand applies the same repair inside a local reverse proxy."
         },
         "image": {
           "light": "/assets/presentation/architecture-light.svg",
           "dark": "/assets/presentation/architecture-dark.svg",
           "alt": {
-            "zh": "internal/proxy/sse.go 重组 delta；internal/spec 根据模型选择 RepairSpec；internal/repair 处理围栏、引号、sentinel 与括号。CLI 将修复后的工具 envelope 写到 stdout，可选轨迹写到 stderr。当前 serve 子命令明确未实现。",
-            "en": "internal/proxy/sse.go reassembles deltas, internal/spec selects a RepairSpec, and internal/repair handles fences, quotes, sentinels and braces. The CLI writes repaired envelopes to stdout and optional traces to stderr. The serve subcommand is explicitly unimplemented."
+            "zh": "internal/proxy/sse.go 重组 delta；internal/spec 根据模型选择 RepairSpec；internal/repair 处理围栏、引号、sentinel 与括号。repair 子命令把修复后的工具 envelope 写到 stdout；serve 子命令在本地反向代理的流内做同样修复。",
+            "en": "internal/proxy/sse.go reassembles deltas, internal/spec selects a RepairSpec, and internal/repair handles fences, quotes, sentinels and braces. The repair subcommand writes repaired envelopes to stdout; the serve subcommand applies the same repair inside a local reverse proxy."
           },
           "mobile": {
             "light": "/assets/presentation/architecture-mobile-light.svg",
@@ -159,12 +159,12 @@
     "details": [
       {
         "title": {
-          "zh": "当前没有实时代理",
-          "en": "No live proxy in this version"
+          "zh": "serve 子命令已上线",
+          "en": "The serve subcommand is live"
         },
         "body": {
-          "zh": "serve 会返回未实现错误；这里展示的是 repair 的离线内核。",
-          "en": "serve returns an unimplemented error; this example demonstrates the offline repair core."
+          "zh": "callpatch serve --upstream http://127.0.0.1:8081 在本地反向代理的流式响应里运行同一套修复；干净流原样转发，需要修复时重新合成干净的 OpenAI SSE。",
+          "en": "callpatch serve --upstream http://127.0.0.1:8081 runs the same repair on a local reverse proxy's streamed responses; clean streams pass through verbatim and broken ones are re-emitted as clean OpenAI SSE."
         }
       }
     ]
@@ -242,8 +242,8 @@
       "en": "Reconstructed arguments need caller review; valid JSON does not imply a correct operation."
     },
     {
-      "zh": "当前 serve 未实现，不能据此声称 Agent 接入已跑通。",
-      "en": "serve is unimplemented, so this does not establish a working agent integration."
+      "zh": "serve 的修复路径在 httptest 集成测试下验证，尚未录制真实 llama.cpp 会话的端到端 demo；接入真实 Agent 前先用自己的轨迹验证。",
+      "en": "The serve repair path is verified under httptest integration tests; an end-to-end demo against a real llama.cpp session has not been recorded. Validate with your own traces before pointing an agent at it."
     },
     {
       "zh": "未知模型会回退 Qwen3 规则，需留意 stderr。",
@@ -251,6 +251,6 @@
     }
   ],
   "footer": {
-    "tag": "0.1.0 · Go 1.24+ · MIT"
+    "tag": "0.2.0 · Go 1.24+ · MIT"
   }
 }
