@@ -97,13 +97,25 @@ func (s *Server) repairSSEBody(resp *http.Response, body []byte) error {
 	// byte-identically — the proxy leaves clean sessions undistorted (and
 	// quiet: only repairs and failures are traced).
 	anyRepair := false
+	anyFailed := false
 	for i, tc := range cs.Calls {
 		clean, rpt := pipe.Repair([]byte(tc.Arguments))
+		if rpt.Err != nil {
+			anyFailed = true
+		}
 		if rpt.Repaired || rpt.Err != nil {
 			anyRepair = true
 			s.logTrace(rpt.TraceLine(tc.Index, tc.Name))
 		}
 		cs.Calls[i].Arguments = string(clean)
+	}
+	if anyFailed {
+		// A repair that cannot produce valid JSON must not be laundered into a
+		// synthesized stream: synthesize drops unparseable chunks, re-parents
+		// every tool call to choice 0 and fabricates a finish_reason. Replay
+		// the upstream bytes verbatim — the same "replay what arrived rather
+		// than fabricating" contract as the read-error path above.
+		return replaceBody(resp, body)
 	}
 	if !anyRepair {
 		return replaceBody(resp, body)

@@ -9,7 +9,7 @@
 
 **Reassemble tool-call arguments from saved SSE traces, repair JSON with model-specific rules, and inspect the repair trace.**
 
-`v0.2.0` · `Go 1.24+` · [MIT](LICENSE)
+`v0.3.0` · `Go 1.24+` · [MIT](LICENSE)
 
 [Website](https://callpatch.lei6393.com) · [Demo record](docs/demo-results.json)
 

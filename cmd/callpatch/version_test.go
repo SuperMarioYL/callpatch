@@ -15,7 +15,7 @@ import (
 // manifest's meta.content_version. A drift between any two surfaces is how a
 // release ships claiming the wrong version.
 func TestVersionLockstep(t *testing.T) {
-	want := "0.2.0"
+	want := "0.3.0"
 
 	root := repoRoot(t)
 

@@ -9,7 +9,7 @@
 
 **从已保存的 SSE 轨迹重组 tool-call 参数，按模型规则修复 JSON，并输出修复轨迹。**
 
-`v0.2.0` · `Go 1.24+` · [MIT](LICENSE)
+`v0.3.0` · `Go 1.24+` · [MIT](LICENSE)
 
 [Website](https://callpatch.lei6393.com) · [Demo record](docs/demo-results.json)
 

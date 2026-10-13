@@ -8,7 +8,7 @@ import "strings"
 // Qwen3's chat template wraps tool-call arguments in a ```json fenced block.
 // Under lossy SSE streaming the closing ``` is frequently split across deltas
 // or dropped entirely, so the reassembled arguments buffer arrives as
-// "```json\n{...}\n``" or "```json\n{..." — not valid JSON because of the fence
+// "```json\n{...}\n“" or "```json\n{..." — not valid JSON because of the fence
 // markers. RestitchFence removes the opening fence line and any trailing
 // backticks (full or truncated closing fence), returning the inner text and
 // ok=true when a fence was present. When no fence is present it returns buf
@@ -74,13 +74,19 @@ func StripBetween(buf []byte, open, close string) (clean []byte, n int) {
 // SSE stream ended before the escaped character arrived). It drops the dangling
 // backslash so the following pass can cleanly terminate the string.
 //
+// Only an ODD trailing backslash run is dangling: a complete escaped backslash
+// (an even run, e.g. a value ending in \\) is valid JSON and must survive.
 // Other broken-escape shapes (invalid \X sequences, over-escaped \\") are
 // intentionally left untouched: they are ambiguous to repair deterministically
 // and are surfaced by Detect for a human, or a future learned pass. n is the
 // number of dangling backslashes removed (0 or 1).
 func UnescapeQuotes(buf []byte) (clean []byte, n int) {
 	s := string(buf)
-	if strings.HasSuffix(s, "\\") {
+	run := 0
+	for i := len(s) - 1; i >= 0 && s[i] == '\\'; i-- {
+		run++
+	}
+	if run%2 == 1 {
 		return []byte(s[:len(s)-1]), 1
 	}
 	return buf, 0

@@ -4,6 +4,40 @@ All notable changes to CallPatch are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [SemVer](https://semver.org/).
 
+## [0.3.0] - 2026-10-14
+
+### Fixed
+
+- **Empty arguments no longer fail repair.** A zero-argument tool call legally
+  carries `arguments: ""`, but `json.Valid` rejects the empty buffer, so the
+  pipeline reported "still invalid JSON after repair", the CLI exited 1 on a
+  valid stream, and the proxy re-synthesized it. Empty (or whitespace-only)
+  arguments now pass through untouched.
+- **Failed repairs replay the upstream stream verbatim.** When a tool call
+  cannot be repaired to valid JSON, the proxy now replays the original bytes
+  instead of synthesizing a new stream. Synthesis drops unparseable chunks,
+  re-parents every tool call to choice 0 and can fabricate a `finish_reason`;
+  an unrepairable stream must reach the client as the upstream sent it. This
+  supersedes the v0.2.0 best-effort-synthesis behavior.
+- **Escape parity in `BalanceBraces` / `UnescapeQuotes`.** A stream truncated
+  right after a *complete* escaped backslash (even trailing run) kept its
+  quote-less shape broken: the old byte-inspection fixup dropped one backslash
+  of the pair, so the DeepSeek pipeline (which has no unescape step) failed the
+  repair and the qwen3 pipeline mangled the value. Both primitives now use
+  trailing-run parity: only a dangling (odd) escape is dropped.
+
+### Added
+
+- **Raw control characters inside string values are repaired.** Local CN models
+  emit raw newlines/tabs inside string arguments (multiline shell commands,
+  code snippets); these are illegal in JSON strings and were unrepairable.
+  `BalanceBraces` is string-state aware, so it now escapes raw LF/TAB to
+  `\n`/`\t` and drops bare CR framing noise while scanning — valid streams are
+  untouched.
+- **Release binaries.** A `release` workflow now cross-builds
+  linux/darwin/windows amd64+arm64 binaries and attaches them to the GitHub
+  release on every `v*` tag (the v0.2.0 release shipped with zero assets).
+
 ## [0.2.0] - 2026-09-10
 
 ### Fixed

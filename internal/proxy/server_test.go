@@ -127,10 +127,13 @@ func TestServe_CleanSSEPassesThroughVerbatim(t *testing.T) {
 	assert.NotContains(t, trace.String(), "repaired:", "nothing should have been repaired")
 }
 
-// TestServe_UnrepairableCallEmitsBestEffort asserts a tool call that survives
-// repair still comes out as a well-formed SSE stream (best-effort arguments,
-// repair-failed trace line) instead of a broken or empty response.
-func TestServe_UnrepairableCallEmitsBestEffort(t *testing.T) {
+// TestServe_UnrepairableCallReplaysUpstreamVerbatim guards the v0.3.0 fix
+// (supersedes the v0.2.0 TestServe_UnrepairableCallEmitsBestEffort): a tool
+// call that survives repair with invalid JSON must NOT be laundered into a
+// synthesized stream — synthesize drops unparseable chunks, re-parents tool
+// calls to choice 0 and can fabricate finish_reason. The upstream bytes are
+// replayed verbatim instead.
+func TestServe_UnrepairableCallReplaysUpstreamVerbatim(t *testing.T) {
 	broken := "data: {\"id\":\"c2\",\"object\":\"chat.completion.chunk\",\"model\":\"qwen3\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_y\",\"type\":\"function\",\"function\":{\"name\":\"f\",\"arguments\":\"{\\\"a\\\": b\"}}]},\"finish_reason\":null}]}\n\n" +
 		"data: {\"id\":\"c2\",\"object\":\"chat.completion.chunk\",\"model\":\"qwen3\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"length\"}]}\n\n" +
 		"data: [DONE]\n\n"
@@ -140,11 +143,7 @@ func TestServe_UnrepairableCallEmitsBestEffort(t *testing.T) {
 	resp, body := postChatCompletion(t, front)
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.Contains(t, body, "data: [DONE]", "the stream must stay well-formed")
-	cs, err := proxy.ReassembleChatStream(bytes.NewReader([]byte(body)))
-	require.NoError(t, err)
-	require.Len(t, cs.Calls, 1)
-	assert.Equal(t, `{"a": b}`, cs.Calls[0].Arguments, "best-effort arguments pass through")
+	assert.Equal(t, broken, body, "an unrepairable stream must be replayed byte-identically")
 	assert.Contains(t, trace.String(), "repair failed:", "the failure must be traced")
 }
 

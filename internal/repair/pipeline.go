@@ -71,6 +71,13 @@ func (p *Pipeline) Repair(buf []byte) (clean []byte, rpt *Report) {
 		Strategies: p.S.StrategyNames(),
 		Input:      len(buf),
 	}
+	// An empty (or whitespace-only) arguments buffer is valid OpenAI —
+	// zero-arg tools emit arguments:"" — but json.Valid rejects it, so Detect
+	// would fire and repair would report a false failure. Pass it through.
+	if len(bytes.TrimSpace(buf)) == 0 {
+		rpt.Output = len(buf)
+		return bytes.Clone(buf), rpt
+	}
 	if !p.S.DetectAt(buf) {
 		rpt.Output = len(buf)
 		return bytes.Clone(buf), rpt
