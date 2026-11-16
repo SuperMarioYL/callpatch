@@ -4,6 +4,34 @@ All notable changes to CallPatch are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [SemVer](https://semver.org/).
 
+## [0.4.0] - 2026-11-16
+
+### Fixed
+
+- **A code fence inside a string value is no longer mistaken for the Qwen3
+  envelope.** `RestitchFence` searched for the first ` ``` ` anywhere in the
+  arguments buffer, so a truncated tool call that writes markdown (a fence
+  inside the `content` value) was rewritten to the fence body and reported as
+  repaired — `{"n":1,"s":"```\n123\n` came back as `123` with `_repaired: true`
+  and exit 0. The fence now counts as the envelope only when it sits on a buffer
+  boundary (a leading opener or a trailing backtick run), an empty inner text
+  leaves the buffer untouched, and a fence-only tail no longer erases the JSON.
+- **Truncation at a JSON member boundary is repaired.** `BalanceBraces` closed
+  structure but left the partial token truncation creates, so a stream cut after
+  a comma, after a colon, or mid-key could not be repaired: `{"a":1,` became
+  `{"a":1,}`, `{"a":` became `{"a":}`, `{"a":"x","b` became `{"a":"x","b"}`.
+  The pipeline then reported "still invalid JSON after repair", `callpatch
+  repair` exited 1 on a repairable stream, and `serve` replayed the broken
+  upstream bytes. The incomplete trailing member of the innermost open container
+  is now dropped before closing, keeping every complete member and inventing
+  nothing.
+- **A compressed upstream stream no longer bypasses repair.** The proxy
+  forwarded the agent's `Accept-Encoding`, so an upstream that gzipped its
+  `text/event-stream` body handed the reassembler opaque bytes: zero tool calls,
+  no trace, HTTP 200, and the broken stream replayed untouched. The proxy now
+  drops `Accept-Encoding` on the outbound request so the transport negotiates
+  and decompresses transparently; repair always sees readable SSE.
+
 ## [0.3.0] - 2026-10-14
 
 ### Fixed

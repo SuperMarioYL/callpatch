@@ -14,28 +14,47 @@ import "strings"
 // ok=true when a fence was present. When no fence is present it returns buf
 // unchanged with ok=false.
 //
+// A fence only counts as the envelope when it sits on a buffer boundary: a
+// leading ``` (the opener) or a trailing backtick run (the closing fence, with
+// its opener already stripped by the local server). A fence *inside* an
+// argument's string value is data — coding agents write markdown files through
+// tool calls — so it is never promoted to the whole arguments value.
+//
 // RestitchFence is idempotent: applying it to already-fence-free output is a
 // no-op, so it is safe to run unconditionally before BalanceBraces.
 func RestitchFence(buf []byte) (inner []byte, ok bool) {
 	s := string(buf)
-	idx := strings.Index(s, "```")
-	if idx < 0 {
+	trimmed := strings.TrimRight(s, " \t\r\n")
+	trailingBackticks := len(trimmed) - len(strings.TrimRight(trimmed, "`"))
+	hasOpener := strings.HasPrefix(strings.TrimLeft(s, " \t\r\n"), "```")
+	// A closing fence is at least "```", truncated to two backticks at the end of
+	// the stream; a single backtick is more likely a value byte than a fence.
+	hasCloser := trailingBackticks >= 2
+	if !hasOpener && !hasCloser {
 		return buf, false
 	}
-	rest := s[idx:]
-	// The opening fence runs to the end of its line (```json or plain ```).
-	nl := strings.IndexByte(rest, '\n')
-	if nl < 0 {
-		// Single-line fence with no inner content — just strip the token.
-		trimmed := strings.ReplaceAll(rest, "```", "")
-		return []byte(strings.TrimSpace(trimmed)), true
+
+	if hasOpener {
+		rest := strings.TrimLeft(s, " \t\r\n")
+		// The opening fence runs to the end of its line (```json or plain ```).
+		nl := strings.IndexByte(rest, '\n')
+		if nl < 0 {
+			// Single-line fence: the whole buffer was the marker and its body.
+			rest = strings.TrimSpace(strings.ReplaceAll(rest, "```", ""))
+		} else {
+			rest = rest[nl+1:]
+		}
+		s = rest
 	}
-	innerStr := rest[nl+1:]
 	// Drop a trailing closing fence, full or truncated, plus surrounding noise.
-	innerStr = strings.TrimRight(innerStr, " \t\r\n")
-	innerStr = strings.TrimRight(innerStr, "`")
-	innerStr = strings.TrimRight(innerStr, " \t\r\n")
-	return []byte(innerStr), true
+	s = strings.TrimRight(s, " \t\r\n")
+	s = strings.TrimRight(s, "`")
+	s = strings.TrimRight(s, " \t\r\n")
+	if strings.TrimSpace(s) == "" {
+		// The fence carried no inner content; leave the buffer for honest failure.
+		return buf, false
+	}
+	return []byte(s), true
 }
 
 // StripBetween removes every [open ... close] sentinel run from buf, where the

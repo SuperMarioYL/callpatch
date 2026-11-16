@@ -68,15 +68,17 @@ func TestRepairCommand_AllTracesRepair(t *testing.T) {
 	}
 }
 
-// TestRepairCommand_UnrepairableBufferNotClaimedRepaired guards the v0.2.0 fix:
-// arguments truncated mid-key cannot be repaired into valid JSON, and the CLI
-// must say so — "_repaired": false, a stderr warning, and a non-zero exit —
-// instead of claiming a repair it cannot verify.
+// TestRepairCommand_UnrepairableBufferNotClaimedRepaired guards the v0.2.0 fix,
+// still in force in v0.4.0: a buffer that no deterministic rule can turn into
+// valid JSON must be reported honestly — "_repaired": false, a stderr warning,
+// non-zero exit — instead of claiming a repair it cannot verify. v0.4.0 made
+// member-boundary truncation repairable, so the probe is now an invalid value
+// token (a bare identifier) rather than a truncated member.
 func TestRepairCommand_UnrepairableBufferNotClaimedRepaired(t *testing.T) {
-	// Reassembled arguments: {"city":"Beijing","uni  (truncated mid-key)
-	trace := "data: {\"id\":\"t\",\"object\":\"chat.completion.chunk\",\"model\":\"qwen3\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_t\",\"type\":\"function\",\"function\":{\"name\":\"get_weather\",\"arguments\":\"{\\\"city\\\":\\\"Beijing\\\",\\\"uni\"}}]},\"finish_reason\":null}]}\n\n" +
+	// Reassembled arguments: {"city":"Beijing","unit": b  (bare token as value)
+	trace := "data: {\"id\":\"t\",\"object\":\"chat.completion.chunk\",\"model\":\"qwen3\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_t\",\"type\":\"function\",\"function\":{\"name\":\"get_weather\",\"arguments\":\"{\\\"city\\\":\\\"Beijing\\\",\\\"unit\\\": b\"}}]},\"finish_reason\":null}]}\n\n" +
 		"data: [DONE]\n\n"
-	path := filepath.Join(t.TempDir(), "midkey.sse")
+	path := filepath.Join(t.TempDir(), "unrepairable.sse")
 	require.NoError(t, os.WriteFile(path, []byte(trace), 0o644))
 
 	out, err := runCallpatch(t, "repair", path)
@@ -84,6 +86,24 @@ func TestRepairCommand_UnrepairableBufferNotClaimedRepaired(t *testing.T) {
 	assert.Contains(t, out, `"_repaired": false`)
 	assert.NotContains(t, out, `"_repaired": true`)
 	assert.Contains(t, out, "still invalid JSON after repair")
+}
+
+// TestRepairCommand_MemberBoundaryTruncationRepairs guards the v0.4.0 fix: a
+// stream cut at a member boundary (after a comma, after a colon, or mid-key) is
+// a normal finish_reason=length shape and must repair with every complete
+// member preserved, instead of exiting 1 on a repairable call.
+func TestRepairCommand_MemberBoundaryTruncationRepairs(t *testing.T) {
+	// Reassembled arguments: {"city":"Beijing","uni  (truncated mid-key)
+	trace := "data: {\"id\":\"t2\",\"object\":\"chat.completion.chunk\",\"model\":\"qwen3\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_m\",\"type\":\"function\",\"function\":{\"name\":\"get_weather\",\"arguments\":\"{\\\"city\\\":\\\"Beijing\\\",\\\"uni\"}}]},\"finish_reason\":null}]}\n\n" +
+		"data: [DONE]\n\n"
+	path := filepath.Join(t.TempDir(), "midkey.sse")
+	require.NoError(t, os.WriteFile(path, []byte(trace), 0o644))
+
+	out, err := runCallpatch(t, "repair", path)
+	require.NoErrorf(t, err, "a member-boundary truncation must repair: %s", out)
+	assert.Contains(t, out, `"_repaired": true`)
+	assert.Contains(t, out, "Beijing", "the complete member must be preserved")
+	assert.Contains(t, out, "get_weather")
 }
 
 // TestRepairCommand_ExtraArgsRejected guards the v0.2.0 fix: v0.1.0 silently

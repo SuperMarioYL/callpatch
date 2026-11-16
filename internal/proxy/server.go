@@ -46,6 +46,16 @@ func (s *Server) Handler() http.Handler {
 		})
 	}
 	rp := httputil.NewSingleHostReverseProxy(s.Upstream)
+	// The repair layer parses plain SSE text, so the proxy must never receive a
+	// compressed body: a forwarded Accept-Encoding makes the transport pass an
+	// encoding-negotiated stream through opaque, and repair would silently find
+	// nothing. Dropping the header lets the transport negotiate and decompress
+	// transparently, so every stream reaches repair as readable SSE.
+	director := rp.Director
+	rp.Director = func(req *http.Request) {
+		director(req)
+		req.Header.Del("Accept-Encoding")
+	}
 	rp.ModifyResponse = s.repairChatStream
 	return rp
 }

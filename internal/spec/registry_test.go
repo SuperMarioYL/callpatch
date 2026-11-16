@@ -3,6 +3,7 @@ package spec_test
 import (
 	"testing"
 
+	"github.com/SuperMarioYL/callpatch/internal/repair"
 	"github.com/SuperMarioYL/callpatch/internal/spec"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -55,4 +56,21 @@ func TestMatch_LongestKeyWins(t *testing.T) {
 	s, ok := spec.Match("qwen3-deepseek-v4-hybrid")
 	require.True(t, ok)
 	assert.Equal(t, "deepseek-v4", s.Model)
+}
+
+// TestPipeline_RepairsMemberBoundaryTruncation pins the v0.4.0 behavior at the
+// spec level: both shipped specs must turn a truncation that lands at a member
+// boundary into valid JSON instead of reporting a failed repair (which made the
+// CLI exit 1 on a repairable stream).
+func TestPipeline_RepairsMemberBoundaryTruncation(t *testing.T) {
+	for _, model := range []string{"qwen3", "deepseek-v4"} {
+		t.Run(model, func(t *testing.T) {
+			s, ok := spec.Match(model)
+			require.True(t, ok)
+			clean, rpt := repair.NewPipeline(s).Repair([]byte(`{"a":1,`))
+			assert.NoError(t, rpt.Err)
+			assert.True(t, rpt.Repaired)
+			assert.JSONEq(t, `{"a":1}`, string(clean))
+		})
+	}
 }

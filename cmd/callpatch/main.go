@@ -25,7 +25,7 @@ import (
 	"github.com/SuperMarioYL/callpatch/internal/spec"
 )
 
-const version = "0.3.0"
+const version = "0.4.0"
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {

@@ -9,7 +9,7 @@
 
 **从已保存的 SSE 轨迹重组 tool-call 参数，按模型规则修复 JSON，并输出修复轨迹。**
 
-`v0.3.0` · `Go 1.24+` · [MIT](LICENSE)
+`v0.4.0` · `Go 1.24+` · [MIT](LICENSE)
 
 [Website](https://callpatch.lei6393.com) · [Demo record](docs/demo-results.json)
 
@@ -55,6 +55,8 @@ go run ./cmd/callpatch repair --trace --model deepseek-v4 testdata/deepseek-brok
 
 `repair [--trace] [--model NAME] FILE.sse` 是离线命令。--trace 为布尔开关，文件是位置参数；--model 覆盖流中的模型名。输出 function.arguments 仍是包含 JSON 的字符串，消费前需要再解析。修复后仍不是合法 JSON 的参数会以 `"_repaired": false` 输出、stderr 提示 `repair failed:` 并以非零码退出——不虚报修复结果。
 
+确定性修复覆盖：剥离围栏与 sentinel、处理悬空转义与转义奇偶、补齐括号、转义字符串内的原始换行/制表符，以及落在逗号、冒号或键中间的截断——这类截断只丢弃残缺的尾部成员，完整字段原样保留，不凭空补值。
+
 `serve --upstream URL [--listen :8080] [--model NAME]` 是 v0.2 新增的实时代理命令：
 
 ```bash
@@ -63,7 +65,7 @@ callpatch serve --upstream http://127.0.0.1:8081 --listen :8080
 # Agent 的 OPENAI_BASE_URL 指向 http://127.0.0.1:8080
 ```
 
-代理只在流式 `/v1/chat/completions` 响应上工作：整条 SSE 缓冲重组后跑同一套修复，需要修复时重新合成干净的 OpenAI chunk 流，无需修复时原样逐字节转发；`repaired: ...` 轨迹打到 stderr。非 chat 请求（如 `/v1/models`）原样转发。缓冲意味着首个字节会等到上游流结束——截断只有到流尾才可判定，这是修复语义决定的取舍。
+代理只在流式 `/v1/chat/completions` 响应上工作：整条 SSE 缓冲重组后跑同一套修复，需要修复时重新合成干净的 OpenAI chunk 流，无需修复时原样逐字节转发；`repaired: ...` 轨迹打到 stderr。非 chat 请求（如 `/v1/models`）原样转发。上游若压缩响应，代理会先取得未压缩流再修复，不会因为 `Accept-Encoding` 让修复静默失效。缓冲意味着首个字节会等到上游流结束——截断只有到流尾才可判定，这是修复语义决定的取舍。
 
 ## 实际 Demo
 

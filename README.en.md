@@ -9,7 +9,7 @@
 
 **Reassemble tool-call arguments from saved SSE traces, repair JSON with model-specific rules, and inspect the repair trace.**
 
-`v0.3.0` · `Go 1.24+` · [MIT](LICENSE)
+`v0.4.0` · `Go 1.24+` · [MIT](LICENSE)
 
 [Website](https://callpatch.lei6393.com) · [Demo record](docs/demo-results.json)
 
@@ -55,6 +55,8 @@ Inputs are in [testdata](testdata/), with commands in [examples/presentation_dem
 
 `repair [--trace] [--model NAME] FILE.sse` is the offline command. --trace is a boolean switch and the file is positional; --model overrides the stream model. function.arguments remains a JSON-containing string and needs parsing by consumers. Arguments that are still invalid JSON after repair are emitted with `"_repaired": false`, a `repair failed:` stderr line, and a non-zero exit — the tool never claims a repair it cannot verify.
 
+Deterministic repair covers: stripping a leading/trailing code fence and sentinel runs, dangling escapes and escape parity, closing unbalanced brackets, escaping raw newlines/tabs inside string values, and truncation that lands at a comma, colon or partial key — that last shape drops only the incomplete trailing member and keeps every complete field, never inventing a value.
+
 `serve --upstream URL [--listen :8080] [--model NAME]` is the live proxy command added in v0.2:
 
 ```bash
@@ -63,7 +65,7 @@ callpatch serve --upstream http://127.0.0.1:8081 --listen :8080
 # point the agent's OPENAI_BASE_URL at http://127.0.0.1:8080
 ```
 
-The proxy works only on streamed /v1/chat/completions responses: the SSE body is buffered and reassembled, run through the same repair pipeline, re-synthesized as a clean OpenAI chunk stream when a repair fired, and replayed byte-identically when nothing needed repair. `repaired: ...` traces go to stderr. Non-chat requests (e.g. /v1/models) are forwarded verbatim. Buffering means the first byte waits for the upstream stream to end — truncation is only decidable at end-of-stream, which is the semantic trade-off of repair.
+The proxy works only on streamed /v1/chat/completions responses: the SSE body is buffered and reassembled, run through the same repair pipeline, re-synthesized as a clean OpenAI chunk stream when a repair fired, and replayed byte-identically when nothing needed repair. `repaired: ...` traces go to stderr. Non-chat requests (e.g. /v1/models) are forwarded verbatim. If the upstream compresses its response, the proxy obtains the uncompressed stream before repairing, so `Accept-Encoding` can never make repair silently do nothing. Buffering means the first byte waits for the upstream stream to end — truncation is only decidable at end-of-stream, which is the semantic trade-off of repair.
 
 ## Recorded demo
 
